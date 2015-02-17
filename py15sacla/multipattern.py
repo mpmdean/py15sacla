@@ -23,7 +23,8 @@ import re
 def match(patterns, s):
     '''True if all patterns match the string.
 
-    patterns -- a list of string patterns
+    patterns -- a list of string patterns.  Can be also a string that gets
+                split to sub-patterns according to shell quoting rules.
     s        -- string to be matched
 
     Return bool.
@@ -51,18 +52,24 @@ class MultiPattern(object):
         '''Initialize new MultiPattern object.
 
         patterns    -- a sequence of string patterns, all of them must match.
+                       Can be also a single string that gets split to
+                       sub-patterns according to shell quoting rules.
 
         No return value.
         See module docstring for pattern syntax.
         '''
+        import shlex
         # declare object attributes
         self.patterns = []
         self.fixed_patterns = []
         self.re_patterns = []
         self.re_validators = {}
         # process inputs
+        plist = patterns
+        if isinstance(patterns, basestring):
+            plist = shlex.split(patterns)
         duplicates = set()
-        for p in patterns:
+        for p in plist:
             if not p in duplicates:  self.patterns.append(p)
             duplicates.add(p)
         self._parsePatterns()
