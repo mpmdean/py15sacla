@@ -99,6 +99,16 @@ class MultiPattern(object):
         return bool(ismatch)
 
 
+    def __call__(self, s):
+        '''Alias for match - check if string s matches all patterns.
+
+        s -- string to be checked
+
+        Return bool.
+        '''
+        return self.match(s)
+
+
     def _parsePatterns(self):
         '''Identify internal patterns as fixed or regular expressions.
 
