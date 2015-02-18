@@ -8,7 +8,7 @@ from py15sacla.multipattern import MultiPattern
 
 class HDFSelection(object):
 
-    h5file = None
+    hdffile = None
     datanames = None
 
     def __init__(self, src, pattern=''):
@@ -23,19 +23,19 @@ class HDFSelection(object):
         allnames = []
         already_datasets = False
         if isinstance(src, HDFSelection):
-            self.h5file = src.h5file
+            self.hdffile = src.hdffile
             allnames[:] = src.datanames
             already_datasets = True
         elif isinstance(src, basestring):
-            self.h5file = h5py.File(src)
-            self.h5file.visit(allnames.append)
+            self.hdffile = h5py.File(src)
+            self.hdffile.visit(allnames.append)
         elif isinstance(src, h5py.Group):
-            self.h5file = src.file
+            self.hdffile = src.file
             src.visit(allnames.append)
         else:
             raise ValueError("Unsupported selection source {0!r}".format(src))
         mp = MultiPattern(pattern)
         dnms = [n for n in allnames if mp.match(n) and
-                already_datasets or isinstance(self.h5file[n], h5py.Dataset)]
+                already_datasets or isinstance(self.hdffile[n], h5py.Dataset)]
         self.datanames = numpy.char.array(dnms)
         return
