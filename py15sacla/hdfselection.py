@@ -20,22 +20,21 @@ class HDFSelection(object):
         pattern  -- optional string pattern for filtering datanames.
                 By default an empty string that matches everything.
         '''
-        allnames = []
-        already_datasets = False
+        self.datanames = []
+        collect_datanames = lambda n, v: (isinstance(v, h5py.Dataset) and
+                self.datanames.append(n) or None)
         if isinstance(src, HDFSelection):
             self.hdffile = src.hdffile
-            allnames[:] = src.datanames
-            already_datasets = True
+            self.datanames[:] = src.datanames
         elif isinstance(src, basestring):
             self.hdffile = h5py.File(src)
-            self.hdffile.visit(allnames.append)
+            self.hdffile.visititems(collect_datanames)
         elif isinstance(src, h5py.Group):
             self.hdffile = src.file
-            src.visit(allnames.append)
+            src.visititems(collect_datanames)
         else:
             raise ValueError("Unsupported selection source {0!r}".format(src))
-        mp = MultiPattern(pattern)
-        dnms = [n for n in allnames if mp.match(n) and
-                already_datasets or isinstance(self.hdffile[n], h5py.Dataset)]
-        self.datanames = numpy.char.array(dnms)
+        if pattern:
+            mp = MultiPattern(pattern)
+            self.datanames = [n for n in self.datanames if mp.match(n)]
         return
