@@ -88,18 +88,18 @@ class TestHDFSelection(unittest.TestCase):
         idcs_rev = numpy.arange(len(hse))[::-1]
         self.assertEqual(hse.names, hse[idcs_rev].names)
         idcs_127 = numpy.array([1, 2, 7])
-        hse127 = hse[1:3] + hse[7:8]
+        hse127 = hse[1:3] | hse[7:8]
         self.assertEqual(hse127.names, hse[idcs_127].names)
         self.assertEqual(hse127.names, hse[idcs_127.tolist()].names)
         return
 
-#   def test___add__(self):
-#       """check HDFSelection.__add__()
+#   def test___or__(self):
+#       """check HDFSelection.__or__()
 #       """
 #       return
 #
-#   def test___iadd__(self):
-#       """check HDFSelection.__iadd__()
+#   def test___ior__(self):
+#       """check HDFSelection.__ior__()
 #       """
 #       return
 #

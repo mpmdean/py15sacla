@@ -152,7 +152,7 @@ class HDFSelection(object):
         return rv
 
 
-    def __add__(self, other):
+    def __or__(self, other):
         '''Return a union of this HDFSelection with another.
 
         other    -- another HDFSelection referring to the same hdffile.
@@ -160,11 +160,11 @@ class HDFSelection(object):
         Return a new HDFSelection object.
         '''
         rv = self.copy()
-        rv += other
+        rv |= other
         return rv
 
 
-    def __iadd__(self, other):
+    def __ior__(self, other):
         '''Extend this HDFSelection with items from the other.
 
         other    -- another HDFSelection referring to the same hdffile.
