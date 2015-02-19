@@ -43,3 +43,168 @@ class HDFSelection(object):
             mp = MultiPattern(pattern)
             self._datanames = [n for n in self._datanames if mp.match(n)]
         return
+
+
+    def __str__(self):
+        '''String representation of this HDF selection.
+        '''
+        import pprint
+        dfmt = pprint.pformat(self._datanames)
+        rv = "HDFSelection({})".format(dfmt)
+        return rv
+
+
+    def filter(self, pattern):
+        """Filter to records where pattern matches are evaluates to True.
+
+        pattern  -- either a string that is matched to the HDF names
+                    or a callable object, which is evaluated with a
+                    dataset argument.
+
+        Return new HDFSelection object.
+        """
+        if isinstance(pattern, basestring):
+            return HDFSelection(self, pattern)
+        if callable(pattern):
+            hdfsel = self.copy()
+            hdfsel._datanames = [n for n in self._datanames
+                    if pattern(self.hdffile[n])]
+            return hdfsel
+        raise TypeError("pattern must be string or a callable object.")
+
+
+    def __iter__(self):
+        """Return iterator over the selected datasets.
+        """
+        for n in self._datanames:
+            yield self.hdffile[n]
+        pass
+
+
+    def copy(self):
+        "Return a copy of this selection."
+        return HDFSelection(self)
+
+    # Properties:
+
+    @property
+    def names(self):
+        "Return list of names of the HDF datasets in the selection."
+        return self._datanames[:]
+
+    @property
+    def datasets(self):
+        "Return list of the selected HDF Dataset objects."
+        return list(self)
+
+    # Common dataset operations:
+
+    def min(self, slice=()):
+        """Build array of minimum values per each dataset.
+
+        slice    -- optional slice range to be applied on the dataset,
+                    e.g., numpy.s_[:50,:50].
+
+        Return NumPy array.
+        """
+        return numpy.array([numpy.min(ds[slice], axis=axis) for ds in self])
+
+
+    def max(self, slice=()):
+        """Build array of maximum values per each dataset.
+
+        slice    -- optional slice range to be applied on the dataset,
+                    e.g., numpy.s_[:50,:50].
+
+        Return NumPy array.
+        """
+        return numpy.array([numpy.max(ds[slice], axis=axis) for ds in self])
+
+
+    def sum(self, slice=()):
+        '''Return sum of datasets in the selection.
+
+        slice    -- optional slice range to be applied on the dataset,
+                    e.g., numpy.s_[0:50:2,0:50:2].
+
+        Return NumPy array.
+        '''
+        rv = reduce(lambda x, y : x[slice] + y[slice], self)
+        rv = numpy.asarray(rv)
+        return rv
+
+
+    def __len__(self):
+        return len(self._datanames)
+
+
+    def __getitem__(self, key):
+        dnms = self._datanames[key]
+        if isinstance(dnms, basestring):
+            rv = self.hdffile[dnms]
+        else:
+            rv = self.copy()
+            rv._datanames = sorted(dnms)
+        return rv
+
+
+    def __add__(self, other):
+        '''Return a union of this HDFSelection with another.
+
+        other    -- another HDFSelection referring to the same hdffile.
+
+        Return a new HDFSelection object.
+        '''
+        rv = self.copy()
+        rv += other
+        return rv
+
+
+    def __iadd__(self, other):
+        '''Extend this HDFSelection with items from the other.
+
+        other    -- another HDFSelection referring to the same hdffile.
+
+        Return self.
+        '''
+        self.__checkOperationArgument(other)
+        self._datanames = sorted(set(self._datanames).union(other._datanames))
+        return self
+
+
+    def __sub__(self, other):
+        '''Return new HDFSelection with datasets removed.
+
+        other    -- HDFSelection that is to be removed.  It must refer
+                    to the same hdffile.
+
+        Return new HDFSelection.
+        '''
+        rv = self.copy()
+        rv -= other
+        return rv
+
+
+    def __isub__(self, other):
+        '''Remove specified items from this selection.
+
+        other    -- HDFSelection that is to be removed.  It must refer
+                    to the same hdffile.
+
+        Return self.
+        '''
+        self.__checkOperationArgument(other)
+        dropnames = set(other._datanames)
+        self._datanames = [n for n in self._datanames if n not in dropnames]
+        return self
+
+    # Internal helper functions
+
+    def __checkOperationArgument(self, other):
+        "Check validity of the argument for addition or subtraction."
+        if not isinstance(other, HDFSelection):
+            emsg = 'The object must be of HDFSelection type.'
+            raise TypeError(emsg)
+        if self.hdffile != other.hdffile:
+            raise ValueError('Selections must refer to the same hdffile.')
+        return
