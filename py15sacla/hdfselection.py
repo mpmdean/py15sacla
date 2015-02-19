@@ -139,12 +139,16 @@ class HDFSelection(object):
 
 
     def __getitem__(self, key):
-        dnms = self._datanames[key]
-        if isinstance(dnms, basestring):
-            rv = self.hdffile[dnms]
+        if isinstance(key, int):
+            return self.hdffile[self._datanames[key]]
+        if isinstance(key, slice):
+            dnms = self._datanames[key]
         else:
-            rv = self.copy()
-            rv._datanames = sorted(dnms)
+            indices = numpy.arange(len(self))[key]
+            dnms = [self._datanames[i] for i in indices]
+        dnms.sort()
+        rv = self.copy()
+        rv._datanames = dnms
         return rv
 
 

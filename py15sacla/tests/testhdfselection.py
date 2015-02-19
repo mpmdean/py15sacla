@@ -4,6 +4,7 @@
 """
 
 import unittest
+import numpy
 import h5py
 
 from py15sacla.tests.testutils import datafile, hdfdatafile
@@ -76,7 +77,20 @@ class TestHDFSelection(unittest.TestCase):
         hse = self.selection
         self.failUnless(isinstance(hse[0], h5py.Dataset))
         self.failUnless(isinstance(hse[:1], HDFSelection))
-        self.assertEqual(sorted(hse.names), hse[:].names)
+        self.assertEqual(sorted(hse.names), hse[::-1].names)
+        # boolean array
+        flag_all = numpy.ones(len(hse), dtype=bool)
+        self.assertEqual(hse.names, hse[flag_all].names)
+        flag_2nd = numpy.zeros(len(hse), dtype=bool)
+        flag_2nd[1] = True
+        self.assertEqual(hse[1:2].names, hse[flag_2nd].names)
+        # integer array
+        idcs_rev = numpy.arange(len(hse))[::-1]
+        self.assertEqual(hse.names, hse[idcs_rev].names)
+        idcs_127 = numpy.array([1, 2, 7])
+        hse127 = hse[1:3] + hse[7:8]
+        self.assertEqual(hse127.names, hse[idcs_127].names)
+        self.assertEqual(hse127.names, hse[idcs_127.tolist()].names)
         return
 
 #   def test___add__(self):
