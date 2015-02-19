@@ -26,7 +26,7 @@ class HDFSelection(object):
             raise ValueError("mode is valid only when src is a filename.")
         self._datanames = []
         collect_datanames = lambda n, v: (isinstance(v, h5py.Dataset) and
-                self._datanames.append(n) or None)
+                self._datanames.append('/' + n.lstrip('/')) or None)
         if isinstance(src, HDFSelection):
             self.hdffile = src.hdffile
             self._datanames[:] = src._datanames
@@ -151,6 +151,7 @@ class HDFSelection(object):
         rv._datanames = dnms
         return rv
 
+    # operators for union and difference of the selections
 
     def __or__(self, other):
         '''Return a union of this HDFSelection with another.
@@ -201,6 +202,51 @@ class HDFSelection(object):
         dropnames = set(other._datanames)
         self._datanames = [n for n in self._datanames if n not in dropnames]
         return self
+
+    # Comparison operators:
+
+    def __eq__(self, other):
+        rv = (self.hdffile == other.hdffile and
+                self._datanames == other._datanames)
+        return rv
+
+
+    def __neq__(self, other):
+        return not (self == other)
+
+
+    def __ge__(self, other):
+        rv = (self.hdffile == other.hdffile and
+                set(self._datanames) >= set(other._datanames))
+        return rv
+
+
+    def __gt__(self, other):
+        rv = (self.hdffile == other.hdffile and
+                set(self._datanames) > set(other._datanames))
+        return rv
+
+
+    def __le__(self, other):
+        rv = (self.hdffile == other.hdffile and
+                set(self._datanames) <= set(other._datanames))
+        return rv
+
+
+    def __lt__(self, other):
+        rv = (self.hdffile == other.hdffile and
+                set(self._datanames) < set(other._datanames))
+        return rv
+
+
+    def __contains__(self, x):
+        "True if x is a Dataset object in this selection."
+        import bisect
+        rv = (isinstance(x, h5py.Dataset) and x.file == self.hdffile)
+        if rv:
+            i = bisect.bisect_left(self._datanames, x.name)
+            rv = (i < len(self._datanames) and self._datanames[i] == x.name)
+        return rv
 
     # Internal helper functions
 

@@ -112,6 +112,51 @@ class TestHDFSelection(unittest.TestCase):
 #       """check HDFSelection.__isub__()
 #       """
 #       return
+#
+#   def test___eq__(self):
+#       """check HDFSelection.__eq__()
+#       """
+#       return
+#
+#   def test___neq__(self):
+#       """check HDFSelection.__neq__()
+#       """
+#       return not (self == other)
+#
+#   def test___ge__(self):
+#       """check HDFSelection.__ge__()
+#       """
+#       return
+#
+#   def test___gt__(self):
+#       """check HDFSelection.__gt__()
+#       """
+#       return
+#
+#   def test___le__(self):
+#       """check HDFSelection.__le__()
+#       """
+#       return
+#
+#   def test___lt__(self):
+#       """check HDFSelection.__lt__()
+#       """
+#       return
+
+
+    def test___contains__(self):
+        """check HDFSelection.__contains__()
+        """
+        sall = self.selection
+        sdd = sall.filter('detector_data')
+        sth = sall.filter('spectrometer_theta_position')
+        self.failUnless(sdd[0] in sall)
+        self.failUnless(sth[-1] in sall)
+        self.assertFalse(sth[-1] in sdd)
+        self.assertFalse(sdd[3] in sth)
+        self.assertFalse(sdd[3] in sth)
+        self.assertFalse(sall[-1] in sth)
+        return
 
 # End of class TestHDFSelection
 
