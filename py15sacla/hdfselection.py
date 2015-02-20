@@ -17,7 +17,7 @@ class HDFSelection(object):
         src  -- source node for selecting HDF5 datasets.  Accepted types
                 are HDFSelection, HDF5 Group or a string, which is used
                 to open an h5py.File.
-        pattern  -- optional string pattern for filtering _datanames.
+        pattern  -- optional string pattern for matching dataset names.
                 By default an empty string that matches everything.
         mode -- Python mode used for opening the HDF5 file, by default 'r'.
                 Used only when src is a string.
@@ -54,23 +54,20 @@ class HDFSelection(object):
         return rv
 
 
-    def filter(self, pattern):
-        """Filter to records where pattern matches are evaluates to True.
+    def filter(self, fnc):
+        """Return sub-selection where filter function evaluates to True.
 
-        pattern  -- either a string that is matched to the HDF names
-                    or a callable object, which is evaluated with a
-                    dataset argument.
+        fnc  -- function or callable object, which is evaluate with each
+                dataset in this selection.
 
         Return new HDFSelection object.
         """
-        if isinstance(pattern, basestring):
-            return HDFSelection(self, pattern)
-        if callable(pattern):
-            hdfsel = self.copy()
-            hdfsel._datanames = [n for n in self._datanames
-                    if pattern(self.hdffile[n])]
-            return hdfsel
-        raise TypeError("pattern must be string or a callable object.")
+        if not callable(fnc):
+            raise TypeError("fnc must be string or a callable object.")
+        hdfsel = self.copy()
+        hdfsel._datanames = [n for n in self._datanames
+                if fnc(self.hdffile[n])]
+        return hdfsel
 
 
     def groupby(self, values):
@@ -162,9 +159,21 @@ class HDFSelection(object):
 
 
     def __getitem__(self, key):
+        """Get dataset or a slice from this selection.
+
+        key  -- bracket index.  Return Dataset when integer.
+                Return HDFSelection, when slice or NumPy array of indices
+                or boolean flags.  When string, return HDFSelection with
+                matching dataset names.
+
+        Return Dataset or HDFSelection.
+        """
         if isinstance(key, int):
             return self.hdffile[self._datanames[key]]
-        if isinstance(key, slice):
+        if isinstance(key, basestring):
+            mp = MultiPattern(key)
+            dnms = [n for n in self._datanames if mp.match(n)]
+        elif isinstance(key, slice):
             dnms = self._datanames[key]
         else:
             indices = numpy.arange(len(self))[key]

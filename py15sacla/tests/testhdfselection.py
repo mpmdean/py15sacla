@@ -80,9 +80,14 @@ class TestHDFSelection(unittest.TestCase):
         """check HDFSelection.__getitem__()
         """
         hse = self.selection
-        self.failUnless(isinstance(hse[0], h5py.Dataset))
-        self.failUnless(isinstance(hse[:1], HDFSelection))
+        self.assertTrue(isinstance(hse[0], h5py.Dataset))
+        self.assertTrue(isinstance(hse[:1], HDFSelection))
         self.assertEqual(sorted(hse.names), hse[::-1].names)
+        # string filter
+        self.assertEqual(0, len(hse['^not_a_valid_name']))
+        self.assertEqual(len(hse), len(hse['/']))
+        self.assertTrue(all(ds.name.endswith('detector_data')
+            for ds in hse['detector_data$']))
         # boolean array
         flag_all = numpy.ones(len(hse), dtype=bool)
         self.assertEqual(hse.names, hse[flag_all].names)
@@ -153,8 +158,8 @@ class TestHDFSelection(unittest.TestCase):
         """check HDFSelection.__contains__()
         """
         sall = self.selection
-        sdd = sall.filter('detector_data')
-        sth = sall.filter('spectrometer_theta_position')
+        sdd = sall['detector_data']
+        sth = sall['spectrometer_theta_position']
         self.failUnless(sdd[0] in sall)
         self.failUnless(sth[-1] in sall)
         self.assertFalse(sth[-1] in sdd)
