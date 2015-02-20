@@ -73,6 +73,29 @@ class HDFSelection(object):
         raise TypeError("pattern must be string or a callable object.")
 
 
+    def groupby(self, values):
+        """Make list of selections with datasets groupped by unique values.
+
+        values   -- iterable collection of the same size as this selection.
+                    The items must be usable as dictionary keys.
+
+        Return a list of HDFSelection objects.
+        """
+        from collections import OrderedDict
+        groups = OrderedDict()
+        cnt = 0
+        for i, v in enumerate(values):
+            if not v in groups:
+                groups[v] = []
+            groups[v].append(i)
+            cnt += 1
+        if cnt != len(self):
+            emsg = "groupby values must be of the compatible length."
+            raise ValueError(emsg)
+        rv = [self[gi] for gi in groups.itervalues()]
+        return rv
+
+
     def __iter__(self):
         """Return iterator over the selected datasets.
         """
