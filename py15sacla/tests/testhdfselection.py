@@ -43,11 +43,16 @@ class TestHDFSelection(unittest.TestCase):
 #       """
 #       return
 #
-#   def test_copy(self):
-#       """check HDFSelection.copy()
-#       """
-#       return
-#
+    def test_copy(self):
+        """check HDFSelection.copy()
+        """
+        dupl = self.selection.copy()
+        self.assertFalse(dupl is self.selection)
+        self.assertFalse(dupl._datanames is self.selection._datanames)
+        self.assertEqual(self.selection, dupl)
+        self.assertTrue(isinstance(dupl, HDFSelection))
+        return
+
 #   def test_min(self):
 #       """check HDFSelection.min()
 #       """
@@ -156,6 +161,7 @@ class TestHDFSelection(unittest.TestCase):
         self.assertFalse(sdd[3] in sth)
         self.assertFalse(sdd[3] in sth)
         self.assertFalse(sall[-1] in sth)
+        self.assertTrue(all(ds in sall for ds in sall))
         return
 
 # End of class TestHDFSelection
