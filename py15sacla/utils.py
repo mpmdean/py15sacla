@@ -20,12 +20,14 @@ def eqbinhistogram(a, bins=10, range=None):
     import numpy
     a = numpy.asarray(a)
     if range is not None:
-        lo, hi = range
+        lo, hi = map(float, range)
         a1 = a[numpy.logical_and(lo <= a, a <= hi)]
     else:
         lo, hi = a.min(), a.max()
         a1 = a.reshape(-1)
-    a2 = (a1 - lo) * (bins / (hi - lo))
+    # Ensure (a1 - lo) is cast as numpy.dtype(float)
+    loarray = numpy.array([lo], dtype=float)
+    a2 = (a1 - loarray) * (bins / (hi - lo))
     counts = numpy.bincount(a2.astype(int), minlength=bins)
     if len(counts) > bins:
         counts[-2:-1] += counts[-1:]
