@@ -34,9 +34,11 @@ class HDFSelection(object):
             m = 'r' if mode is None else mode
             self.hdffile = h5py.File(src, mode=m)
             self.hdffile.visititems(collect_datanames)
+            self._datanames.sort()
         elif isinstance(src, h5py.Group):
             self.hdffile = src.file
             src.visititems(collect_datanames)
+            self._datanames.sort()
         else:
             raise TypeError("Unsupported selection source {0!r}.".format(src))
         if pattern:
