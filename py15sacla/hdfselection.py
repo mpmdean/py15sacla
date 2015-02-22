@@ -119,42 +119,7 @@ class HDFSelection(object):
         "Return list of the selected HDF Dataset objects."
         return list(self)
 
-    # Common dataset operations:
-
-    def min(self, slice=()):
-        """Build array of minimum values per each dataset.
-
-        slice    -- optional slice range to be applied on the dataset,
-                    e.g., numpy.s_[:50,:50].
-
-        Return NumPy array.
-        """
-        return numpy.array([numpy.min(ds[slice], axis=axis) for ds in self])
-
-
-    def max(self, slice=()):
-        """Build array of maximum values per each dataset.
-
-        slice    -- optional slice range to be applied on the dataset,
-                    e.g., numpy.s_[:50,:50].
-
-        Return NumPy array.
-        """
-        return numpy.array([numpy.max(ds[slice], axis=axis) for ds in self])
-
-
-    def sum(self, slice=()):
-        '''Return sum of datasets in the selection.
-
-        slice    -- optional slice range to be applied on the dataset,
-                    e.g., numpy.s_[0:50:2,0:50:2].
-
-        Return NumPy array.
-        '''
-        rv = reduce(lambda x, y : x[slice] + y[slice], self)
-        rv = numpy.asarray(rv)
-        return rv
-
+    # Support collection-like operations
 
     def __len__(self):
         return len(self._datanames)
