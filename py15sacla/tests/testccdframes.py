@@ -28,14 +28,6 @@ class TestCCDFrames(unittest.TestCase):
         """
         return
 
-
-    def test_getFrameConfig(self):
-        """check CCDFrames.getFrameConfig()
-        """
-        cfg = self.ccds.getFrameConfig(self.ccds.selection[0])
-        return
-
-
 # End of class TestCCDFrames
 
 if __name__ == '__main__':
