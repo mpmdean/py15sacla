@@ -10,6 +10,7 @@ def testsuite():
     '''
     import unittest
     modulenames = '''
+        py15sacla.tests.testccdframes
         py15sacla.tests.testhdfselection
     '''.split()
     suite = unittest.TestSuite()
