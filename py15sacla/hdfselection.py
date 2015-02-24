@@ -72,26 +72,38 @@ class HDFSelection(object):
         return hdfsel
 
 
-    def groupby(self, values):
-        """Make list of selections with datasets groupped by unique values.
+    def groupby(self, keys):
+        """Split this selection to subsets groupped by unique keys.
 
-        values   -- iterable collection of the same size as this selection.
-                    The items must be usable as dictionary keys.
+        keys -- iterable collection of the same size as this selection.
+                The objects inside must be usable as dictionary keys.
 
         Return a list of HDFSelection objects.
+        """
+        rv = [kse[1] for kse in self.groupbyitems(keys)]
+        return rv
+
+
+    def groupbyitems(self, keys):
+        """Split this selection to subsets groupped by unique keys.
+
+        keys -- iterable collection of the same size as this selection.
+                The objects inside must be usable as dictionary keys.
+
+        Return a list of (unique_key, HDFSelection) pairs.
         """
         from collections import OrderedDict
         groups = OrderedDict()
         cnt = 0
-        for i, v in enumerate(values):
-            if not v in groups:
-                groups[v] = []
-            groups[v].append(i)
+        for i, k in enumerate(keys):
+            if not k in groups:
+                groups[k] = []
+            groups[k].append(i)
             cnt += 1
         if cnt != len(self):
-            emsg = "groupby values must be of the compatible length."
+            emsg = "groupby keys must be of the compatible length."
             raise ValueError(emsg)
-        rv = [self[gi] for gi in groups.itervalues()]
+        rv = [(k, self[gi]) for k, gi in groups.iteritems()]
         return rv
 
 
