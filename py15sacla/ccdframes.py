@@ -43,6 +43,42 @@ class CCDFrames(object):
         return
 
 
+    def groupby(self, keys):
+        """Return a list of CCDFrames groupped by unique keys.
+
+        keys -- iterable collection of the same size as this selection.
+                The objects inside must be usable as dictionary keys.
+
+        Return a list of CCDFrames objects.
+        """
+        rv = [kccd[1] for kccd in self.groupbyitems(keys)]
+        return rv
+
+
+    def groupbyitems(self, keys):
+        """Return a list of CCDFrames groupped by unique keys.
+
+        When cbackground is of a CCDFrames type, it is split accordingly.
+
+        keys -- iterable collection of the same size as this selection.
+                The objects inside must be usable as dictionary keys.
+
+        Return a list of (unique_key, CCDFrames) pairs.
+        """
+        import copy
+        rv = []
+        for k, sel in self.selection.groupbyitems(keys):
+            selccd = copy.copy(self)
+            selccd.selection = sel
+            rv.append((k, selccd))
+        if isinstance(self.cbackground, CCDFrames):
+            ccdlist = [ccd for k, ccd in rv]
+            bggroups = self.cbackground.groupby(keys)
+            for ccd, bg in zip(ccdlist, bggroups):
+                ccd.setBackground(bg)
+        return rv
+
+
     def setROI(self, roislice):
         """Set region of interest used for image processing.
 
