@@ -200,6 +200,12 @@ class CCDFrames(object):
     # properties
 
     @property
+    def hdffile(self):
+        "Same as self.selection.hdffile."
+        return self.selection.hdffile
+
+
+    @property
     def hcenters(self):
         "Array of center positions of the histogram bins."
         e = self.hedges
