@@ -64,6 +64,10 @@ class CCDFrames(object):
 
         No return value.  Assign cbackground.
         """
+        import copy
+        if background is self:
+            background = copy.copy(self)
+            background.selection = self.selection.copy()
         self.cbackground = background
         return
 
