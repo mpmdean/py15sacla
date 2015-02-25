@@ -137,6 +137,19 @@ class HDFSelection(object):
         return len(self._datanames)
 
 
+    def __delitem__(self, key):
+        """Remove datasets that match the key or slice.
+
+        key  -- any index supported by __getitem__ for bracket lookups.
+                del selection[key]  is equivalent to
+                selection -= selection[key]
+
+        No return value.
+        """
+        self -= self[key]
+        return
+
+
     def __getitem__(self, key):
         """Get dataset or a slice from this selection.
 
@@ -202,7 +215,7 @@ class HDFSelection(object):
 
 
     def __isub__(self, other):
-        '''Remove specified items from this selection.
+        '''Remove datasets that are present in other HDFSelection.
 
         other    -- HDFSelection that is to be removed.  It must refer
                     to the same hdffile.
