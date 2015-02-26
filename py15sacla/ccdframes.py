@@ -179,7 +179,7 @@ class CCDFrames(object):
 
 
     def total(self):
-        "Return sum of all values in the pracessed image frames."
+        "Return sum of all values from the processed image frames."
         psums = map(lambda aa: aa.sum(), self.generate())
         return sum(psums)
 
@@ -188,6 +188,12 @@ class CCDFrames(object):
         """Return average corrected frame as a 2D array.
         """
         return self.sum() / max(1, len(self.selection))
+
+
+    def atotal(self):
+        "Return array of totals from all pixels per each processed frame."
+        psums = map(lambda aa: aa.sum(), self.generate())
+        return numpy.array(psums)
 
 
     def amin(self):
