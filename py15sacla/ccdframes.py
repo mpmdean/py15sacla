@@ -136,8 +136,10 @@ class CCDFrames(object):
         return
 
 
-    def generate(self):
+    def generate(self, start=0):
         """Return iterator to the processed image data.
+
+        start    -- start generating from that data frame if nonzero.
 
         The iterator returns normalized, background-subtracted, thresholded
         arrays.
@@ -151,7 +153,11 @@ class CCDFrames(object):
             if nbg != len(self.selection):
                 raise ValueError("Incompatible length of background frames.")
             ibg = self.cbackground.generate()
-        for dd in self.selection:
+        idd = iter(self.selection)
+        if start:
+            next(itertools.islice(ibg, start, start), None)
+            next(itertools.islice(idd, start, start), None)
+        for dd in idd:
             # ROI
             rv = dd[self.croislice]
             # convert to photon counts if requested
@@ -171,6 +177,30 @@ class CCDFrames(object):
                 rv[rv > hi] = 0
             yield rv
         pass
+
+
+    def toarray(self, index):
+        """Return NumPy array of processed image data.
+
+        index    -- integer, slice, array of boolean flags, or
+                    other index type accepted in numpy arrays.
+
+        Return 2D array for scalar index.  Return 3D array if
+        index is a range.
+        """
+        from py15sacla.utils import unique_ordered
+        nsel = len(self.selection)
+        indices = numpy.arange(nsel)[index]
+        indices = unique_ordered(indices.reshape(-1))
+        rv = numpy.empty(0, dtype=float)
+        for i, idx in enumerate(indices):
+            aa = self.generate(start=idx).next()
+            if not rv.size:
+                rv.resize(len(indices), *aa.shape)
+            rv[i] = aa
+        if len(rv) == 1:
+            rv = rv.squeeze(0)
+        return rv
 
 
     def sum(self):
