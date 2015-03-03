@@ -10,4 +10,4 @@ from py15sacla.ccdframes import CCDFrames
 from py15sacla.hdfselection import HDFSelection
 from py15sacla.utils import getDetectorConfig, getHDFArray, getHDFDataset
 from py15sacla.utils import unique_ordered, ordered_unique
-from py15sacla.utils import eqbinhistogram
+from py15sacla.utils import eqbinhistogram, findfiles

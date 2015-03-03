@@ -109,3 +109,83 @@ def unique_ordered(a):
     return pandas.unique(a)
 
 ordered_unique = unique_ordered
+
+
+def findfiles(patterns=(), path=None):
+    '''Return filenames that match all specified patterns.
+
+    patterns -- a list of string patterns that must all match in the
+                the returned files.  Can be also a single string with
+                patterns separated by whitespace characters.
+    path     -- optional list of directories to be searched instead
+                of the current directory.  Can be also a string which
+                is taken as a single directory path.
+
+    Pattern syntax and examples:
+
+    ^start   -- match "start" only at the beginning of the string
+    end$     -- match "end" only at the end of string
+    <7>      -- match number 7 preceded by any number of leading zeros
+    <1-34>   -- match an integer range.  The matched number may have
+                one or more leading zeros
+    <7->     -- match an integer greater or equal 7 allowing leading zeros
+    <->      -- match any integer
+
+    Return a list of matching filenames.
+    '''
+    import os.path
+    from py15sacla.multipattern import MultiPattern
+    from IPython.utils.text import SList
+    if isinstance(path, basestring):
+        path = [path]
+    mp = MultiPattern(patterns)
+    allpaths = ['.'] if path is None else path
+    rv = SList()
+    for d in unique_everseen(allpaths):
+        if not os.path.isdir(d):  continue
+        dirfiles = os.listdir(d)
+        dirfiles.sort(key=sortKeyNumericString)
+        # filter matching names first, this does not need any disk access
+        files = filter(mp.match, dirfiles)
+        files = [os.path.normpath(os.path.join(d, f)) for f in files]
+        # filter out any directories
+        files = filter(os.path.isfile, files)
+        rv += files
+    return rv
+
+
+def unique_everseen(iterable, key=None):
+    """Return a generator to unique ordered elements in an iterable.
+
+    iterable -- an iterable object
+    key      -- function that returns key for finding unique items.
+                Use the item value when None.
+
+    unique_everseen('AAAABBBCCDAABBB') --> A B C D
+    unique_everseen('ABBCcAD', str.lower) --> A B C D
+    """
+    seen = set()
+    for element in iterable:
+        k = element if key is None else key(element)
+        if k not in seen:
+            seen.add(k)
+            yield element
+    pass
+
+
+def sortKeyNumericString(s):
+    """This function can be used as a key argument for sort to order
+    string items in numeric, rather than alphabetic order.
+
+    s    -- string entry
+
+    Return a key for comparison in sorting.  The string s is split at
+    integer segments that are then converted to integers.  Signs, decimal
+    points and exponents in s are ignored.
+    """
+    if not hasattr(sortKeyNumericString, 'rxdigits'):
+        import re
+        sortKeyNumericString.rxdigits = re.compile(r'(\d+)')
+    rv = sortKeyNumericString.rxdigits.split(s)
+    rv[1::2] = map(int, rv[1::2])
+    return rv
