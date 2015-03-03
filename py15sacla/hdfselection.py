@@ -282,3 +282,5 @@ class HDFSelection(object):
         if self.hdffile != other.hdffile:
             raise ValueError('Selections must refer to the same hdffile.')
         return
+
+# end of class HDFSelection

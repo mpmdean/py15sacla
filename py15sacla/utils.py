@@ -69,6 +69,40 @@ def getDetectorConfig(src):
     return rv
 
 
+def getHDFDataset(src, pattern):
+    '''Find h5py.Dataset object matching the pattern.
+
+    src  -- source node for searching for the data.  Accepted types
+            HDF5 Group or a string, which is used to open an h5py.File.
+    pattern  -- string pattern for matching dataset names.  Must match
+            a unique dataset name under the src hierarchy.
+
+    Return an h5py.Dataset object.
+    '''
+    from py15sacla.hdfselection import HDFSelection
+    sel = HDFSelection(src, pattern)
+    if len(sel) == 0:
+        emsg = "pattern {0!r} does not match anything".format(pattern)
+        raise ValueError(emsg)
+    elif len(sel) > 1:
+        emsg = "pattern {0!r} matches multiple datasets".format(pattern)
+        raise ValueError(emsg)
+    return sel[0]
+
+
+def getHDFArray(src, pattern):
+    '''Return HDF data matching the pattern as NumPy array.
+
+    src  -- source node for searching for the data.  Accepted types
+            HDF5 Group or a string, which is used to open an h5py.File.
+    pattern  -- string pattern for matching dataset names.  Must match
+            a unique dataset name under the src hierarchy.
+
+    Return NumPy array.
+    '''
+    return getHDFDataset(src, pattern).value
+
+
 def unique_ordered(a):
     "Return unique values in array a in the order of appearance."
     import pandas
