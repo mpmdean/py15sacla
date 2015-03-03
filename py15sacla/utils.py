@@ -73,3 +73,5 @@ def unique_ordered(a):
     "Return unique values in array a in the order of appearance."
     import pandas
     return pandas.unique(a)
+
+ordered_unique = unique_ordered
