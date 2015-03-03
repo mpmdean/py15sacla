@@ -203,6 +203,37 @@ class CCDFrames(object):
         return rv
 
 
+    def compress(self, keys, method, bgmap=None):
+        '''Compress processed image frames at the repeated keys.
+
+        keys     -- iterable collection of the same size as the selection.
+                    The key values must be usable as dictionary keys.
+        method   -- string from ('mean', 'sum', 'total') or a callable object.
+                    When string, use that CCDFrames method to compress
+                    equivalent frames.  Otherwise use method(ccdgroup) to
+                    produce elements of the compressed arrays.
+        bgmap    -- dictionary that maps each key to a background array.
+                    May be also a tuple of (keyvalues, bgarrays) which is
+                    converted to a dictionary.
+
+        Return a tuple of (unique_keys, compressed_images).
+        '''
+        from py15sacla.utils import unique_ordered
+        fzip = method
+        if isinstance(method, basestring):
+            assert method in 'mean sum total'.split()
+            fzip = getattr(CCDFrames, method)
+        ccdgroups = self.groupby(keys)
+        if bgmap is not None:
+            if isinstance(bgmap, tuple) and 2 == len(bgmap):
+                bgmap = dict(zip(*bgmap))
+            for ccd, x in zip(ccdgroups, unique_ordered(keys)):
+                ccd.setBackground(bgmap[x])
+        ukeys = unique_ordered(keys)
+        zipped = numpy.array([fzip(ccd) for ccd in ccdgroups])
+        return (ukeys, zipped)
+
+
     def sum(self):
         "Return sum of the processed image data as a 2D array."
         return sum(self.generate())
