@@ -1,10 +1,19 @@
 #!/bin/zsh -f
 
+# Configuration --------------------------------------------------------------
+
+MYDIR=${$(readlink -f $0):h}
+BG_CONDITION=${MYDIR}/bg_condition.txt
+SIG_CONDITION=${MYDIR}/sig_condition.txt
+OUT_HDF=/work/mdean/h5files
+OUT_TAGS=/home/mdean/data/config
+
+# ----------------------------------------------------------------------------
+
 zmodload zsh/zutil
 zparseopts -E -D -- \
-    -dark=opt_dark \
     -qsub=opt_qsub \
-    n=opt_dryrun -dry-run=opt_dryrun \
+    n=opt_dryrun -dry-run=opt_dryrun -debug=opt_debug \
     h=opt_help -help=opt_help
 
 if [[ $# == 0 || -n ${opt_help} ]]; then
@@ -13,22 +22,21 @@ if [[ $# == 0 || -n ${opt_help} ]]; then
     print "Options:"
     print "  -n, --dry-run    display job script and exit"
     print "  -h, --help   display this message and exit"
-    print "  --qsub       use qsub to run this from front-end node"
-    print "  --dark       use when-dark.txt to filter the tags"
+    print "  --qsub       use qsub to run this from a front-end node"
+    print "  --debug      save files to PWD instead of standard paths"
     exit
 fi
 
-MYDIR=${$(readlink -f $0):h}
-
-mtl_options=( )
-if [[ -n ${opt_dark} ]]; then
-    print -u2 "not yet implemented"; exit 2
-    mtl_options+=( -inp ${MYDIR}/when-dark.txt )
-else
-    mtl_options+=( -inp ${MYDIR}/when-live.txt )
-fi
-
 JOBNAME="${0:t}-$1"
+
+# check output directories exist
+ls -d "${OUT_HDF?}" "${OUT_TAGS?}" || exit $?
+
+
+if [[ -n $opt_debug ]]; then
+    OUT_HDF=$PWD
+    OUT_TAGS=$PWD
+fi
 
 alias LaunchJob='/bin/bash'
 if [[ -n ${opt_dryrun} ]]; then
@@ -37,9 +45,25 @@ elif [[ -n ${opt_qsub} ]]; then
     alias LaunchJob='qsub -m n -N ${JOBNAME}'
 fi
 
+TAGS_BG=${OUT_TAGS}/tags_${1}_bg.lst
+TAGS_SIG=${OUT_TAGS}/tags_${1}_sig.lst
+
+optmtl_common=( -b 3 -r $1 )
+optmtl_bg=( $optmtl_common -out $TAGS_BG -inp $BG_CONDITION )
+optmtl_sig=( $optmtl_common -out $TAGS_SIG -inp $SIG_CONDITION )
+
+optdc_common=( -dir $OUT_HDF -f ${MYDIR}/RunData_wMotors.conf )
+optdc_bg=( $optdc_common -l $TAGS_BG -o run_${1}_bg.h5 )
+optdc_sig=( $optdc_common -l $TAGS_SIG -o run_${1}_sig.h5 )
+
 LaunchJob <<< "\
+#PBS -l nodes=1:ppn=2
 cd $PWD || exit 2
-MakeTagList -b 3 -r $1 -out tags_$1.lst $mtl_options &&
-DataConvert4 -dir $PWD -o run_$1.h5 \
-    -l tags_$1.lst -f ${MYDIR}/RunData_wMotors.conf
+MakeTagList $optmtl_bg &&
+DataConvert4 $optdc_bg &
+
+MakeTagList $optmtl_sig &&
+DataConvert4 $optdc_sig &
+
+wait
 "
