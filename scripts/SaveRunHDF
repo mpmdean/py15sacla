@@ -3,6 +3,7 @@
 zmodload zsh/zutil
 zparseopts -E -D -- \
     -live=opt_live \
+    -qsub=opt_qsub \
     n=opt_dryrun -dry-run=opt_dryrun \
     h=opt_help -help=opt_help
 
@@ -12,6 +13,7 @@ if [[ $# == 0 || -n ${opt_help} ]]; then
     print "Options:"
     print "  -n, --dry-run    display job script and exit"
     print "  -h, --help   display this message and exit"
+    print "  --qsub       use qsub to run this from front-end node"
     print "  --live       use when-live.txt to filter the tags"
     exit
 fi
@@ -25,9 +27,11 @@ fi
 
 JOBNAME="${0:t}-$1"
 
-alias LaunchJob='qsub -m n -N ${JOBNAME}'
+alias LaunchJob='/bin/bash'
 if [[ -n ${opt_dryrun} ]]; then
     alias LaunchJob='cat'
+elif [[ -n ${opt_qsub} ]]; then
+    alias LaunchJob='qsub -m n -N ${JOBNAME}'
 fi
 
 LaunchJob <<< "\
