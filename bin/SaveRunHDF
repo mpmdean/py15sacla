@@ -1,0 +1,38 @@
+#!/bin/zsh -f
+
+zmodload zsh/zutil
+zparseopts -E -D -- \
+    -live=opt_live \
+    n=opt_dryrun -dry-run=opt_dryrun \
+    h=opt_help -help=opt_help
+
+if [[ $# == 0 || -n ${opt_help} ]]; then
+    print "usage: ${0:t} [options] run-number"
+    print
+    print "Options:"
+    print "  -n, --dry-run    display job script and exit"
+    print "  -h, --help   display this message and exit"
+    print "  --live       use when-live.txt to filter the tags"
+    exit
+fi
+
+MYDIR=${$(readlink -f $0):h}
+
+mtl_options=( )
+if [[ -n ${opt_live} ]]; then
+    mtl_options+=( -inp ${MYDIR}/when-live.txt )
+fi
+
+JOBNAME="${0:t}-$1"
+
+alias LaunchJob='qsub -m n -N ${JOBNAME}'
+if [[ -n ${opt_dryrun} ]]; then
+    alias LaunchJob='cat'
+fi
+
+LaunchJob <<< "\
+cd $PWD || exit 2
+MakeTagList -b 3 -r $1 -out tags_$1.lst $mtl_options &&
+DataConvert -dir $PWD -o run_$1.h5 -each -r $1 \
+    -l tags_$1.lst -f ${MYDIR}/RunData_wMotors.conf
+"
