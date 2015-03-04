@@ -33,6 +33,6 @@ fi
 LaunchJob <<< "\
 cd $PWD || exit 2
 MakeTagList -b 3 -r $1 -out tags_$1.lst $mtl_options &&
-DataConvert -dir $PWD -o run_$1.h5 -each -r $1 \
+DataConvert4 -dir $PWD -o run_$1.h5 \
     -l tags_$1.lst -f ${MYDIR}/RunData_wMotors.conf
 "
