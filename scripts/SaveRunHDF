@@ -58,13 +58,10 @@ optdc_bg=( $optdc_common -l $TAGS_BG -o run_${1}_bg.h5 )
 optdc_sig=( $optdc_common -l $TAGS_SIG -o run_${1}_sig.h5 )
 
 LaunchJob <<< "\
-#PBS -l nodes=1:ppn=2
 cd $PWD || exit 2
 MakeTagList $optmtl_bg &&
-DataConvert4 $optdc_bg &
+DataConvert4 $optdc_bg
 
 MakeTagList $optmtl_sig &&
-DataConvert4 $optdc_sig &
-
-wait
+DataConvert4 $optdc_sig
 "
