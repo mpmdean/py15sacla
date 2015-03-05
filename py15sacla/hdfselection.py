@@ -162,6 +162,8 @@ class HDFSelection(object):
         """
         if isinstance(key, int):
             return self.hdffile[self._datanames[key]]
+        if isinstance(key, tuple) and key:
+            return self[key[0]][key[1:]]
         if isinstance(key, basestring):
             mp = MultiPattern(key)
             dnms = [n for n in self._datanames if mp.match(n)]
