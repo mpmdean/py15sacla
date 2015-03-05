@@ -5,8 +5,9 @@
 MYDIR=${$(readlink -f $0):h}
 BG_CONDITION=${MYDIR}/bg_condition.txt
 SIG_CONDITION=${MYDIR}/sig_condition.txt
-OUT_HDF=/work/mdean/h5files
-OUT_TAGS=/home/mdean/data/config
+# allow override if already set in the environment
+: ${OUT_HDF:=/work/mdean/h5files}
+: ${OUT_TAGS:=/home/mdean/data/config}
 
 # ----------------------------------------------------------------------------
 
@@ -30,7 +31,7 @@ fi
 JOBNAME="${0:t}-$1"
 
 # check output directories exist
-ls -d "${OUT_HDF?}" "${OUT_TAGS?}" || exit $?
+ls -d "${OUT_HDF?}" "${OUT_TAGS?}" > /dev/null || exit $?
 
 
 if [[ -n $opt_debug ]]; then
