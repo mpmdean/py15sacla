@@ -111,6 +111,17 @@ def unique_ordered(a):
 ordered_unique = unique_ordered
 
 
+def multiplicities(a):
+    "Return multiplicities of unique values in array a."
+    import numpy
+    import collections
+    a = numpy.asarray(a)
+    cnts = collections.OrderedDict()
+    for x in a.flat:
+        cnts[x] = cnts.get(x, 0) + 1
+    return numpy.array(cnts.values())
+
+
 def findfiles(patterns=(), path=None):
     '''Return filenames that match all specified patterns.
 
