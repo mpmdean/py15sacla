@@ -1,0 +1,15 @@
+#!/bin/bash
+
+args=("$@")
+
+if [[ "$HOSTNAME" != "fep" ]]; then
+    echo "This script must be run from the fep front-end node."
+    exit 2
+fi
+
+for i in ${args[@]}; do
+    echo Queueing conversion of $i to H5...
+    SaveRunHDF --qsub $i
+done
+
+exit 0
