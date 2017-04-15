@@ -66,7 +66,8 @@ class MultiPattern(object):
         self.re_validators = {}
         # process inputs
         plist = patterns
-        if isinstance(patterns, basestring):
+        #if isinstance(patterns, basestring): MPMD py2 to py3s
+        if isinstance(patterns, str):
             plist = shlex.split(patterns)
         duplicates = set()
         for p in plist:

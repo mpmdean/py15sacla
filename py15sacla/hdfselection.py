@@ -22,7 +22,8 @@ class HDFSelection(object):
         mode -- Python mode used for opening the HDF5 file, by default 'r'.
                 Used only when src is a string.
         '''
-        if mode is not None and not isinstance(src, basestring):
+        #if mode is not None and not isinstance(src, basestring): MPMD fixing py2 to py3 update
+        if mode is not None and not isinstance(src, str):
             raise ValueError("mode is valid only when src is a filename.")
         self._datanames = []
         collect_datanames = lambda n, v: (isinstance(v, h5py.Dataset) and
@@ -30,7 +31,8 @@ class HDFSelection(object):
         if isinstance(src, HDFSelection):
             self.hdffile = src.hdffile
             self._datanames[:] = src._datanames
-        elif isinstance(src, basestring):
+        #elif isinstance(src, basestring):
+        elif isinstance(src, str):
             m = 'r' if mode is None else mode
             self.hdffile = h5py.File(src, mode=m)
             self.hdffile.visititems(collect_datanames)
@@ -164,7 +166,8 @@ class HDFSelection(object):
             return self.hdffile[self._datanames[key]]
         if isinstance(key, tuple) and key:
             return self[key[0]][key[1:]]
-        if isinstance(key, basestring):
+        #if isinstance(key, basestring): MPMD py2 to py3 update
+        if isinstance(key, str):
             mp = MultiPattern(key)
             dnms = [n for n in self._datanames if mp.match(n)]
         elif isinstance(key, slice):
