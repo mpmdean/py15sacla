@@ -108,7 +108,7 @@ class CCDFrames(object):
         return
 
 
-    def setThereshold(self, lo, hi):
+    def setThreshold(self, lo, hi):
         """Set threshold window for background-subtracted values.
 
         Values in normalized background-subtracted images that are outside
