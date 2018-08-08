@@ -1,6 +1,9 @@
 
 # Created by https://www.gitignore.io/api/macos,python
 
+### h5s ###
+*.h5
+
 ### macOS ###
 *.DS_Store
 .AppleDouble
